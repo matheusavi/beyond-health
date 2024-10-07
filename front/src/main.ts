@@ -74,6 +74,7 @@ function setupContextMenu() {
             { key: "layer", value: "CHARACTER" },
             { key: ["metadata", `${ID}/metadata`], value: undefined },
           ],
+          roles: ["GM"]
         },
       },
       {
@@ -81,6 +82,7 @@ function setupContextMenu() {
         label: "Stop tracking life",
         filter: {
           every: [{ key: "layer", value: "CHARACTER" }],
+          roles: ["GM"]
         },
       },
     ],
@@ -144,8 +146,9 @@ function getRandomString(length: number): string {
 
 let warriors: any[] = [];
 
-window.addEventListener("message", function (event) {
-  if (event.data.type === "updateCombatants") {
-    warriors = event.data.warriors;
-  }
+window.addEventListener("message", async function (event) {
+  if ((await OBR.player.getRole()) == "GM")
+    if (event.data.type === "updateCombatants") {
+      warriors = event.data.warriors;
+    }
 });
