@@ -1,0 +1,25 @@
+{
+  "name": "Beyond Health",
+  "description": "Sync the health of your DnD Beyond encounter with Owlbear",
+  "version": "0.1",
+  "manifest_version": 3,
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "action": {
+    "default_icon": "icons/socket-inactive.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.dndbeyond.com/*",
+        "https://www.owlbear.rodeo/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
