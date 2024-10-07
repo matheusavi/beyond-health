@@ -95,8 +95,7 @@ function setupContextMenu() {
           for (let item of items) {
             console.log(JSON.stringify(item));
             item.metadata[`${ID}/metadata`] = {
-              name: item.name, //here insert something to tick as tracking
-              // initiative,
+              tracking: true
             };
           }
         });
