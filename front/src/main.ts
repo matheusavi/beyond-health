@@ -1,30 +1,59 @@
-import OBR from '@owlbear-rodeo/sdk';
-import './style.css'
-import viteLogo from '/vite.svg'
+import OBR from "@owlbear-rodeo/sdk";
+import "./style.css";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+const ID = "com.beyondhealth";
+
+document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-   <h1>Vite + TypeScript</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
+   <input type="text" id="game-id" />  
   </div>
-`
+`;
+
+OBR.onReady(async () => {
+  const metadata = await OBR.room.getMetadata();
+  if (metadata && metadata[ID] && (metadata[ID] as any).identifier)
+    (document.getElementById("game-id") as HTMLInputElement).value = (
+      metadata[ID] as any
+    ).identifier;
+  else {
+    let extensionMetadata: Record<string, any> = {};
+    extensionMetadata[ID] = { identifier: getRandomString(256) };
+    OBR.room.setMetadata({ ...metadata, ...extensionMetadata });
+  }
+});
 
 async function updateLife() {
+  const metadata = await OBR.room.getMetadata();
+  console.log(metadata);
   const resolved = await fetchCharacterData();
-  await OBR.scene.items.updateItems((x) => x.name.startsWith("mao do bobao") && x.layer == "CHARACTER", (list) => {
-    for (var item of list) {
-      item.text.plainText = "mao do bobao " + resolved;
-    }
-  });
+  await OBR.scene.items.updateItems(
+    (x) => x.name.startsWith("mao do bobao") && x.layer == "CHARACTER",
+    (list) => {
+      for (var item of list) {
+        item.text.plainText = "mao do bobao " + resolved;
+      }
+    },
+  );
 }
 
-setInterval(updateLife, 10000)
+setInterval(updateLife, 10000);
 
+async function fetchCharacterData() {
+  return "Bla";
+}
+
+function getRandomString(length: number): string {
+  const charset =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const cryptoObj = window.crypto;
+  const randomValues = new Uint32Array(length);
+
+  cryptoObj.getRandomValues(randomValues);
+
+  for (let i = 0; i < length; i++) {
+    result += charset[randomValues[i] % charset.length];
+  }
+
+  return result;
+}
