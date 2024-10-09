@@ -37,27 +37,30 @@ function getItemTemplate(tokenName: string, beyondName: string): string {
 `;
 }
 
-function setupHealthMapList(element: any) {
-  const renderList = (items: any) => {
-    const mappedItems = [];
+async function setupHealthMapList(element: any) {
+  const renderList = async (items: any) => {
+    const mappedItems = new Map();
     for (const item of items) {
       const metadata = item.metadata[`${ID}/metadata`];
       if (metadata) {
-        mappedItems.push({
-          name: item.name,
-          beyondName: metadata.beyondName,
-        });
+        mappedItems.set(
+          item.name,
+          metadata.beyondName,
+        );
       }
     }
 
+
+
     const nodes = [];
-    for (const item of mappedItems) {
+    for (const [key, value] of mappedItems) {
       const element = document.createElement("div");
-      element.innerHTML = getItemTemplate(item.name, item.beyondName);
+      element.innerHTML = getItemTemplate(key, value);
       nodes.push(element);
     }
     element.replaceChildren(...nodes);
   };
+  renderList(await OBR.scene.items.getItems());
   OBR.scene.items.onChange(renderList);
 }
 
