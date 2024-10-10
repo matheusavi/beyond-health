@@ -112,8 +112,11 @@ function handleOwlbearRodeo() {
           const iframe = iframeParent.parentElement.parentElement.querySelector("iframe");
           if (iframe) {
             iframe.contentWindow.postMessage({ type: 'updateCombatants', warriors: warriors }, '*');
+            console.log("Warriors sent to dnd beyond");
           }
         }
+      } else {
+        console.log("No warrior data to send");
       }
     });
   }
