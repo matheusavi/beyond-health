@@ -160,8 +160,14 @@ function handleOwlbearRodeo() {
 }
 
 try {
-  if (window.location.href.startsWith('https://www.dndbeyond.com/combat-tracker/')) {
-    handleDnDBeyond();
+  if (window.location.href.startsWith('https://www.dndbeyond.com/')) {
+    window.navigation.addEventListener("navigate", (event) => {
+      const url = new URL(event.destination.url);
+
+      if (url.pathname.startsWith("combat-tracker")) {
+        handleDnDBeyond();
+      }
+    })
   } else if (window.location.href.startsWith('https://www.owlbear.rodeo/')) {
     handleOwlbearRodeo();
   }
