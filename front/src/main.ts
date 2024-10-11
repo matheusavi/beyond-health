@@ -3,37 +3,46 @@ import "./style.css";
 
 const ID = "com.beyondhealth";
 
-let warriors: any[] = [];
-
 window.addEventListener("message", async function (event) {
   if ((await OBR.player.getRole()) == "GM")
     if (event.data.type === "updateCombatants") {
-      warriors = event.data.warriors;
+      addCombatantsToMetadata(event.data.warriors);
     }
 });
 
-OBR.onReady(async () => {
+function addCombatantsToMetadata(warriors: any[]) {
+  OBR.room.getMetadata().then((roomMetadata) => {
+    roomMetadata[`${ID}/warriors`] = warriors;
+    OBR.room.setMetadata(roomMetadata);
+  });
+}
+
+OBR.onReady(() => {
   setupContextMenu();
   setupHealthMapList(document.getElementById("selected-tokens"));
 });
 
+async function getWarriors() {
+  const metadata = await OBR.room.getMetadata();
+  return metadata[`${ID}/warriors`];
+}
+
 function getItemTemplate(tokenName: string, beyondName: string): string {
   return `
-        <table
-          class="w-full border border-gray-500 bg-white shadow-md rounded-md"
-        >
-          <tr class="bg-gray-200">
-            <td class="px-4 py-2 border-b border-gray-400">${tokenName}</td>
-            <td class="px-4 py-2 border-b border-gray-400">${beyondName}</td>
-            <td class="px-4 py-2 border-b border-gray-400">
+          <tr class="bg-gray-200 border-spacing-2 border border-slate-500">
+            <td class="px-4 py-2 border">${tokenName}</td>
+            <td class="px-4 py-2">${beyondName}</td>
+            <td class="px-4 py-2">
               <button
                 class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                data-type="token-editor"
+                data-id="${ID}"
+                data-token="${tokenName}"
               >
                 Edit
               </button>
             </td>
           </tr>
-        </table>
 `;
 }
 
@@ -43,14 +52,9 @@ async function setupHealthMapList(element: any) {
     for (const item of items) {
       const metadata = item.metadata[`${ID}/metadata`];
       if (metadata) {
-        mappedItems.set(
-          item.name,
-          metadata.beyondName,
-        );
+        mappedItems.set(item.name, metadata.beyondName);
       }
     }
-
-
 
     const nodes = [];
     for (const [key, value] of mappedItems) {
@@ -59,8 +63,13 @@ async function setupHealthMapList(element: any) {
       nodes.push(element);
     }
     element.replaceChildren(...nodes);
+    let buttons = document.querySelectorAll("button[data-type='token-editor']");
+    buttons.forEach((b) => {
+      b.addEventListener("click", (e) => {
+        alert(e);
+      });
+    });
   };
-  renderList(await OBR.scene.items.getItems());
   OBR.scene.items.onChange(renderList);
 }
 
@@ -111,19 +120,19 @@ function setupContextMenu() {
   });
 }
 
-async function updateLife() {
-  const selector = document.querySelector("select");
-  await OBR.scene.items.updateItems(
-    (x) => x.name == selector?.name && x.layer == "CHARACTER",
-    (list) => {
-      for (var item of list) {
-        item.text.plainText =
-          selector?.selectedOptions[0].text +
-          " - " +
-          selector?.selectedOptions[0].value;
-      }
-    },
-  );
-}
-
-setInterval(updateLife, 10000);
+// async function updateLife() {
+//   const selector = document.querySelector("select");
+//   await OBR.scene.items.updateItems(
+//     (x) => x.name == selector?.name && x.layer == "CHARACTER",
+//     (list) => {
+//       for (var item of list) {
+//         item.text.plainText =
+//           selector?.selectedOptions[0].text +
+//           " - " +
+//           selector?.selectedOptions[0].value;
+//       }
+//     },
+//   );
+// }
+//
+// setInterval(updateLife, 10000);
