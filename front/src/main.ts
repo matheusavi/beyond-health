@@ -19,24 +19,23 @@ function addCombatantsToMetadata(warriors: any[]) {
 
 OBR.onReady(() => {
   setupContextMenu();
-  setupHealthMapList(document.getElementById("selected-tokens"));
+  setupHealthMapList();
 });
 
-async function getWarriors() {
+async function getWarriors(): Promise<any[]> {
   const metadata = await OBR.room.getMetadata();
-  return metadata[`${ID}/warriors`];
+  return metadata[`${ID}/warriors`] as any[];
 }
 
 function getItemTemplate(tokenName: string, beyondName: string): string {
   return `
-          <tr class="bg-gray-200 border-spacing-2 border border-slate-500">
-            <td class="px-4 py-2 border">${tokenName}</td>
-            <td class="px-4 py-2">${beyondName}</td>
-            <td class="px-4 py-2">
+          <tr class="text-white">
+            <td class="px-4 py-2 border-b border-gray-400">${tokenName.substring(0, 15)}</td>
+            <td class="px-4 py-2 border-b border-gray-400">${beyondName}</td>
+            <td class="px-4 py-2 border-b border-gray-400">
               <button
-                class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+                class="bg-violet-500 text-white px-4 py-2 rounded hover:bg-violet-300"
                 data-type="token-editor"
-                data-id="${ID}"
                 data-token="${tokenName}"
               >
                 Edit
@@ -46,7 +45,34 @@ function getItemTemplate(tokenName: string, beyondName: string): string {
 `;
 }
 
-async function setupHealthMapList(element: any) {
+function getChampionsTemplate(warriors: any[]): string {
+  let warriorsHtml = "";
+  warriors.forEach((warrior) => {
+    warriorsHtml += `
+        <label class="cursor-pointer">
+          <input type="radio" name="ram" value="4" class="hidden peer" />
+          <div
+            class="border rounded-lg px-4 py-2 text-center peer-checked:bg-violet-300 peer-checked:text-white"
+          >
+             ${warrior.name}
+          </div>
+        </label>
+      `;
+  });
+  return `
+    <tr class="text-white">
+      <td colspan="3">
+        <div class="flex items-center mb-4">
+          <div class="grid grid-cols-2 gap-4">
+            ${warriorsHtml}
+          </div>
+        </div>
+      </td>
+    </tr>
+`;
+}
+
+async function setupHealthMapList() {
   const renderList = async (items: any) => {
     const mappedItems = new Map();
     for (const item of items) {
@@ -56,21 +82,27 @@ async function setupHealthMapList(element: any) {
       }
     }
 
-    const nodes = [];
+    const element = document.querySelector("#selected-tokens");
+    let html = "";
     for (const [key, value] of mappedItems) {
-      const element = document.createElement("div");
-      element.innerHTML = getItemTemplate(key, value);
-      nodes.push(element);
+      html += getItemTemplate(key, value);
     }
-    element.replaceChildren(...nodes);
+
+    element!.innerHTML = html;
     let buttons = document.querySelectorAll("button[data-type='token-editor']");
     buttons.forEach((b) => {
-      b.addEventListener("click", (e) => {
-        alert(e);
+      b.addEventListener("click", async (e: any) => {
+        const token = e.target.getAttribute("data-token");
+        const warriors = await getWarriors();
+        b.parentElement!.parentElement!.insertAdjacentHTML(
+          "afterend",
+          getChampionsTemplate(warriors),
+        );
       });
     });
   };
   OBR.scene.items.onChange(renderList);
+  setTimeout(async () => renderList(await OBR.scene.items.getItems()), 2000);
 }
 
 function setupContextMenu() {
@@ -119,20 +151,3 @@ function setupContextMenu() {
     },
   });
 }
-
-// async function updateLife() {
-//   const selector = document.querySelector("select");
-//   await OBR.scene.items.updateItems(
-//     (x) => x.name == selector?.name && x.layer == "CHARACTER",
-//     (list) => {
-//       for (var item of list) {
-//         item.text.plainText =
-//           selector?.selectedOptions[0].text +
-//           " - " +
-//           selector?.selectedOptions[0].value;
-//       }
-//     },
-//   );
-// }
-//
-// setInterval(updateLife, 10000);
