@@ -41,11 +41,13 @@ function updateTokenHp(beyondName: string, hp: string) {
       let metadata = item.metadata[`${ID}/metadata`]
       if (!metadata)
         return;
-      if (metadata && metadata.beyondName == beyondName)
+      if (metadata && metadata.beyondName == beyondName) {
         item.metadata[`${ID}/metadata`] = {
           ...item.metadata[`${ID}/metadata`],
           hp: hp
         };
+        item.text.plainText = `${beyondName} - ${hp}`;
+      }
     }
   })
 }
