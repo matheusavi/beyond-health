@@ -13,7 +13,7 @@ function handleDnDBeyond() {
     fields.forEach(field => {
       const nameField = field.querySelector('.combatant-summary__name');
       const hpField = field.querySelector('.combatant-card__hp-current');
-
+      const maxHpField = field.querySelector('.combatant-card__hp-max');
       if (nameField) {
         const observer = new MutationObserver(() => {
           saveWarriors();
@@ -29,6 +29,14 @@ function handleDnDBeyond() {
         observer.observe(hpField, { characterData: true, childList: true, subtree: true });
         previousObservers.push(observer);
       }
+
+      if (maxHpField) {
+        const observer = new MutationObserver(() => {
+          saveWarriors();
+        });
+        observer.observe(maxHpField, { characterData: true, childList: true, subtree: true });
+        previousObservers.push(observer);
+      }
     });
   }
 
@@ -37,7 +45,8 @@ function handleDnDBeyond() {
     const fields = getFields();
     fields.forEach(x => warriors.push({
       name: x.querySelector('.combatant-summary__name')?.innerText,
-      hp: x.querySelector('.combatant-card__hp-current')?.innerText
+      hp: x.querySelector('.combatant-card__hp-current')?.innerText,
+      maxHp: x.querySelector('.combatant-card__hp-max')?.innerText
     }));
 
     chrome.storage.local.set({ 'dndbeyond-warriors': warriors });

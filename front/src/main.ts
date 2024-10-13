@@ -11,8 +11,9 @@ window.addEventListener("message", async function (event) {
 });
 
 interface Warrior {
-  name: string
-  hp: string
+  name: string;
+  hp: string;
+  maxHp: string;
 }
 
 function addCombatantsToMetadata(warriors: Warrior[]) {
@@ -20,7 +21,7 @@ function addCombatantsToMetadata(warriors: Warrior[]) {
     roomMetadata[`${ID}/warriors`] = sanitizeWarriors(warriors);
     OBR.room.setMetadata(roomMetadata);
     for (let item of warriors) {
-      updateTokenHp(item.name, item.hp)
+      updateTokenHp(item.name, item.hp + "/" + item.maxHp);
     }
   });
 }
@@ -36,20 +37,22 @@ async function getWarriors(): Promise<Warrior[]> {
 }
 
 function updateTokenHp(beyondName: string, hp: string) {
-  OBR.scene.items.updateItems(x => !!x.metadata[`${ID}/metadata`], (items) => {
-    for (let item of items) {
-      let metadata = item.metadata[`${ID}/metadata`]
-      if (!metadata)
-        return;
-      if (metadata && metadata.beyondName == beyondName) {
-        item.metadata[`${ID}/metadata`] = {
-          ...item.metadata[`${ID}/metadata`],
-          hp: hp
-        };
-        item.text.plainText = `${beyondName} - ${hp}`;
+  OBR.scene.items.updateItems(
+    (x) => !!x.metadata[`${ID}/metadata`],
+    (items) => {
+      for (let item of items) {
+        let metadata = item.metadata[`${ID}/metadata`];
+        if (!metadata) return;
+        if (metadata && metadata.beyondName == beyondName) {
+          item.metadata[`${ID}/metadata`] = {
+            ...item.metadata[`${ID}/metadata`],
+            hp: hp,
+          };
+          item.text.plainText = `${beyondName} - ${hp}`;
+        }
       }
-    }
-  })
+    },
+  );
 }
 
 function getItemTemplate(tokenName: string, beyondName: string): string {
@@ -115,25 +118,36 @@ function removeOpenEditors() {
 }
 
 function setTokenCancelButtons() {
-  document.querySelector("button[data-type='token-cancel']")!.addEventListener("click", (e: any) => {
-    removeOpenEditors()
-  })
+  document
+    .querySelector("button[data-type='token-cancel']")!
+    .addEventListener("click", (e: any) => {
+      removeOpenEditors();
+    });
 }
 
 function setTokenSaveButtons() {
-  document.querySelector("button[data-type='token-save']")!.addEventListener("click", (e: any) => {
-    const token = e.target.getAttribute("data-token");
-    const warrior = (document.querySelector("input[name='warrior']:checked") as HTMLInputElement).value;
-    OBR.scene.items.updateItems(x => x.name == token, items => {
-      for (let item of items) {
-        item.metadata[`${ID}/metadata`] = {
-          ...item.metadata[`${ID}/metadata`],
-          beyondName: warrior
-        };
-      }
-    })
-    removeOpenEditors();
-  })
+  document
+    .querySelector("button[data-type='token-save']")!
+    .addEventListener("click", (e: any) => {
+      const token = e.target.getAttribute("data-token");
+      const warrior = (
+        document.querySelector(
+          "input[name='warrior']:checked",
+        ) as HTMLInputElement
+      ).value;
+      OBR.scene.items.updateItems(
+        (x) => x.name == token,
+        (items) => {
+          for (let item of items) {
+            item.metadata[`${ID}/metadata`] = {
+              ...item.metadata[`${ID}/metadata`],
+              beyondName: warrior,
+            };
+          }
+        },
+      );
+      removeOpenEditors();
+    });
 }
 
 async function setupHealthMapList() {
@@ -220,9 +234,8 @@ function setupContextMenu() {
 
 function sanitizeWarriors(warriors: Warrior[]): Warrior[] {
   warriors.forEach((x) => {
-    x.name = x.name.replace(/[^a-zA-Z0-9 ]/g, "")
-    x.hp = x.hp.replace(/[^a-zA-Z0-9 ]/g, "")
-  })
+    x.name = x.name.replace(/[^a-zA-Z0-9 ]/g, "");
+    x.hp = x.hp.replace(/[^a-zA-Z0-9 /]/g, "");
+  });
   return warriors;
 }
-
