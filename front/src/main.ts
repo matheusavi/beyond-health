@@ -10,10 +10,18 @@ window.addEventListener("message", async function (event) {
     }
 });
 
-function addCombatantsToMetadata(warriors: any[]) {
+interface Warrior {
+  name: string
+  hp: string
+}
+
+function addCombatantsToMetadata(warriors: Warrior[]) {
   OBR.room.getMetadata().then((roomMetadata) => {
-    roomMetadata[`${ID}/warriors`] = warriors;
+    roomMetadata[`${ID}/warriors`] = sanitizeWarriors(warriors);
     OBR.room.setMetadata(roomMetadata);
+    for (let item of warriors) {
+      updateTokenHp(item.name, item.hp)
+    }
   });
 }
 
@@ -22,9 +30,24 @@ OBR.onReady(() => {
   setupHealthMapList();
 });
 
-async function getWarriors(): Promise<any[]> {
+async function getWarriors(): Promise<Warrior[]> {
   const metadata = await OBR.room.getMetadata();
-  return metadata[`${ID}/warriors`] as any[];
+  return metadata[`${ID}/warriors`] as Warrior[];
+}
+
+function updateTokenHp(beyondName: string, hp: string) {
+  OBR.scene.items.updateItems(x => !!x.metadata[`${ID}/metadata`], (items) => {
+    for (let item of items) {
+      let metadata = item.metadata[`${ID}/metadata`]
+      if (!metadata)
+        return;
+      if (metadata && metadata.beyondName == beyondName)
+        item.metadata[`${ID}/metadata`] = {
+          ...item.metadata[`${ID}/metadata`],
+          hp: hp
+        };
+    }
+  })
 }
 
 function getItemTemplate(tokenName: string, beyondName: string): string {
@@ -45,7 +68,7 @@ function getItemTemplate(tokenName: string, beyondName: string): string {
 `;
 }
 
-function getChampionsTemplate(warriors: any[], tokenName: string): string {
+function getChampionsTemplate(warriors: Warrior[], tokenName: string): string {
   let warriorsHtml = "";
   warriors.forEach((warrior) => {
     warriorsHtml += `
@@ -192,3 +215,12 @@ function setupContextMenu() {
     },
   });
 }
+
+function sanitizeWarriors(warriors: Warrior[]): Warrior[] {
+  warriors.forEach((x) => {
+    x.name = x.name.replace(/[^a-zA-Z0-9 ]/g, "")
+    x.hp = x.hp.replace(/[^a-zA-Z0-9 ]/g, "")
+  })
+  return warriors;
+}
+
