@@ -161,13 +161,17 @@ function handleOwlbearRodeo() {
 
 try {
   if (window.location.href.startsWith('https://www.dndbeyond.com/')) {
-    window.navigation.addEventListener("navigate", (event) => {
-      const url = new URL(event.destination.url);
+    if (window.location.href.indexOf("combat-tracker") > 0) {
+      handleDnDBeyond();
+    }
+    else
+      window.navigation.addEventListener("navigate", (event) => {
+        const url = new URL(event.destination.url);
 
-      if (url.pathname.startsWith("combat-tracker")) {
-        handleDnDBeyond();
-      }
-    })
+        if (url.pathname.startsWith("combat-tracker")) {
+          handleDnDBeyond();
+        }
+      })
   } else if (window.location.href.startsWith('https://www.owlbear.rodeo/')) {
     handleOwlbearRodeo();
   }

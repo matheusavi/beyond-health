@@ -45,12 +45,12 @@ function getItemTemplate(tokenName: string, beyondName: string): string {
 `;
 }
 
-function getChampionsTemplate(warriors: any[]): string {
+function getChampionsTemplate(warriors: any[], tokenName: string): string {
   let warriorsHtml = "";
   warriors.forEach((warrior) => {
     warriorsHtml += `
         <label class="cursor-pointer">
-          <input type="radio" name="ram" value="4" class="hidden peer" />
+          <input type="radio" name="warrior" value="${warrior.name}" class="hidden peer" />
           <div
             class="border rounded-lg px-4 py-2 text-center peer-checked:bg-violet-300 peer-checked:text-white"
           >
@@ -60,16 +60,55 @@ function getChampionsTemplate(warriors: any[]): string {
       `;
   });
   return `
-    <tr class="text-white">
+    <tr class="text-white" id="token-editor">
       <td colspan="3">
         <div class="flex items-center mb-4">
           <div class="grid grid-cols-2 gap-4">
             ${warriorsHtml}
+          <button
+            class="border rounded-lg px-4 py-2 text-center bg-violet-500 peer-checked:text-white"
+            data-type="token-save"
+            data-token="${tokenName}"
+          >
+            Save
+          </button>
+          <button
+            class="border rounded-lg px-4 py-2 text-center bg-violet-500 peer-checked:text-white"
+            data-type="token-cancel"
+          >
+            Cancel
+          </button>
           </div>
         </div>
       </td>
     </tr>
 `;
+}
+
+function removeOpenEditors() {
+  document.querySelector("#token-editor")?.remove();
+}
+
+function setTokenCancelButtons() {
+  document.querySelector("button[data-type='token-cancel']")!.addEventListener("click", (e: any) => {
+    removeOpenEditors()
+  })
+}
+
+function setTokenSaveButtons() {
+  document.querySelector("button[data-type='token-save']")!.addEventListener("click", (e: any) => {
+    const token = e.target.getAttribute("data-token");
+    const warrior = (document.querySelector("input[name='warrior']:checked") as HTMLInputElement).value;
+    OBR.scene.items.updateItems(x => x.name == token, items => {
+      for (let item of items) {
+        item.metadata[`${ID}/metadata`] = {
+          ...item.metadata[`${ID}/metadata`],
+          beyondName: warrior
+        };
+      }
+    })
+    removeOpenEditors();
+  })
 }
 
 async function setupHealthMapList() {
@@ -96,8 +135,10 @@ async function setupHealthMapList() {
         const warriors = await getWarriors();
         b.parentElement!.parentElement!.insertAdjacentHTML(
           "afterend",
-          getChampionsTemplate(warriors),
+          getChampionsTemplate(warriors, token),
         );
+        setTokenSaveButtons();
+        setTokenCancelButtons();
       });
     });
   };
