@@ -1,7 +1,8 @@
 import OBR from "@owlbear-rodeo/sdk";
 import "./style.css";
-
-const ID = "com.beyondhealth";
+import { ID } from "./constants";
+import { Warrior } from "./warrior";
+import { sanitizeWarriors } from "./util";
 
 window.addEventListener("message", async function (event) {
   if ((await OBR.player.getRole()) == "GM")
@@ -9,12 +10,6 @@ window.addEventListener("message", async function (event) {
       addCombatantsToMetadata(event.data.warriors);
     }
 });
-
-interface Warrior {
-  name: string;
-  hp: string;
-  maxHp: string;
-}
 
 function addCombatantsToMetadata(warriors: Warrior[]) {
   OBR.room.getMetadata().then((roomMetadata) => {
@@ -120,7 +115,7 @@ function removeOpenEditors() {
 function setTokenCancelButtons() {
   document
     .querySelector("button[data-type='token-cancel']")!
-    .addEventListener("click", (e: any) => {
+    .addEventListener("click", () => {
       removeOpenEditors();
     });
 }
@@ -230,12 +225,4 @@ function setupContextMenu() {
       }
     },
   });
-}
-
-function sanitizeWarriors(warriors: Warrior[]): Warrior[] {
-  warriors.forEach((x) => {
-    x.name = x.name.replace(/[^a-zA-Z0-9 ]/g, "");
-    x.hp = x.hp.replace(/[^a-zA-Z0-9 /]/g, "");
-  });
-  return warriors;
 }
