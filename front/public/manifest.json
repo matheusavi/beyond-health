@@ -4,10 +4,9 @@
   "manifest_version": 1,
   "action": {
     "title": "Beyond health",
-    "icon": "/icon.svg",
-    "popover": "/",
     "height": 600,
     "width": 400,
-    "homepage_url": "/beyond-health/"
+    "icon": "https://matheusavi.github.io/beyond-health/icon.svg",
+    "popover": "https://matheusavi.github.io/beyond-health/index.html",
   }
 }
