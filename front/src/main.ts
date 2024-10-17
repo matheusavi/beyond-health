@@ -115,7 +115,7 @@ function removeOpenEditors() {
 function setTokenCancelButtons() {
   document
     .querySelector("button[data-type='token-cancel']")!
-    .addEventListener("click", (e: any) => {
+    .addEventListener("click", () => {
       removeOpenEditors();
     });
 }
