@@ -1,0 +1,12 @@
+{
+  "name": "Beyond Health",
+  "version": "0.0.1",
+  "manifest_version": 1,
+  "action": {
+    "title": "Beyond health",
+    "icon": "/icon.svg",
+    "popover": "/",
+    "height": 600,
+    "width": 400
+  }
+}
