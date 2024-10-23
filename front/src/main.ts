@@ -5,10 +5,10 @@ import { Warrior } from "./warrior";
 import { sanitizeWarriors } from "./util";
 
 window.addEventListener("message", async function (event) {
-  if ((await OBR.player.getRole()) == "GM")
-    if (event.data.type === "updateCombatants") {
+  if (event.data.type === "updateCombatants") {
+    if ((await OBR.player.getRole()) == "GM")
       addCombatantsToMetadata(event.data.warriors);
-    }
+  }
 });
 
 function addCombatantsToMetadata(warriors: Warrior[]) {
